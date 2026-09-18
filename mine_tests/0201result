@@ -1,0 +1,75 @@
+
+copies the string including termination char,	same length not empty
+src: different thing
+dst: something..else
+strlen(s): 15 + \0
+pass n = 16
+src: different thing
+dst: different thing
+ret: different thing
+
+copies the string including termination char,	same length empty
+src: different thing
+dst: 
+strlen(s): 15 + \0
+pass n = 16
+src: different thing
+dst: different thing
+ret: different thing
+
+copies the string including termination char,	src shorter, dest empty
+src: shorter
+dst: 
+strlen(s): 7 + \0
+pass n = 8
+src: shorter
+dst: shorter
+ret: shorter
+
+copies the string including termination char,	src shorter, dest  not empty
+src: shorter
+dst: something..else
+strlen(s): 7 + \0
+pass n = 8
+src: shorter
+dst: shorter
+ret: shorter
+
+null byte is not in first n bytes of src,	trash expected, dst empty:
+src: shorter
+dst: 
+strlen(s): 7 + \0
+pass n = 3
+src: shorter
+dst: sho
+ret: sho
+
+null byte is not in first n bytes of src, 	trash expected, dst not empty:
+src: shorter
+dst: something..else
+strlen(s): 7 + \0
+pass n = 3
+src: shorter
+dst: shoething..else
+ret: shoething..else
+
+length of src is less than n,	expect additional null bytes, dst empty:
+src: shorter
+dst: 
+strlen(s): 7 + \0
+pass n = 50
+res src: shorter
+res dst: shorter
+res ret: shorter
+
+length of src is less than n,	expect additional null bytes, dst not empty:
+src: shorter
+dst: something..else
+strlen(s): 7 + \0
+pass n = 50
+res src: shorter
+res dst: shorter
+res ret: shorter
+*** stack smashing detected ***: terminated
+zsh: IOT instruction (core dumped)  ./a.out
+

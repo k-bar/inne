@@ -1,0 +1,80 @@
+char tab[] = "tekst";          //.data  (for global and static)
+char tab[100];                 //.bss   (for global and static)
+char *p = "tekst";             //.rodata
+
+char s2[6];                    //Declaration: reserve 6 bytes on stack (garbage)
+strcpy(s2, "tekst";            //Initialization: copy letters from .rodata to stack
+
+char *s3;                      //Declaration of pointer on stack
+s3 = malloc(6 * sizeof(char)); //Allocation on heap
+strcpy(s3, "tekst");           //Initialization (fill memory on heap)
+
+
+
+ERRORS:
+char s2[6];
+s2 = "tekst";	array is not mutable lvalue
+
+
+▲ ADRESY WYSOKIE
+│
+├── STACK (Stos)             --> Rośnie w dół. Pamięć automatyczna (zmienne lokalne w funkcjach).
+│   ↓
+│
+│   ↑
+├── HEAP (Sterta)            --> Rośnie w górę. Zarządzana przez malloc / free.
+│
+├── SEKCJA BSS i DATA        --> STAŁY ROZMIAR. To tutaj lądują zmienne globalne i static!
+│                                .data -> zainicjalizowane (np. int x = 5;)
+│                                .bss  -> niezainicjalizowane (np. int x;)
+│
+├── SEKCJA TEXT i .RODATA    --> Kod maszynowy (instrukcje procesora) oraz stringi "tylko do odczytu".
+│
+▼ ADRESY NISKIE
+
+:%s/old/new/g
+:.,.+10s/^stary_tekst/nowy_tekst/
+
+HEAP segmenty
+v Adres w RAM          Szerokość: 8 bajtów (64 bity)
+                     ┌────────────────────────────────────────┐
+ 0x60100000A0 - 16   │ Size of Previous Chunk (jeśli wolny)   │ ◄── Nagłówek (Część 1)
+                     ├────────────────────────────────────────┼──
+ 0x60100000A8 - 8    │ Size of Current Chunk      │A│M│P│ ◄── Nagłówek (To czyta [-1])
+                     ├────────────────────────────────────────┼──
+ 0x60100000B0        │ Twoje dane (bajty 0 - 7)               │ ◄── TUTAJ POKAZUJE "ptr"
+                     ├────────────────────────────────────────┤
+ 0x60100000B8        │ Twoje dane (bajty 8 - 15)              │
+                     ├────────────────────────────────────────┤
+ 0x60100000C2        │ Twoje dane (bajty 16 - 23)             │
+                     ├────────────────────────────────────────┤
+ 0x60100000C8        │ Padding (Wyrównanie pamięci do 16B)   │
+
+
+gdy przed blokiem jest inny: to naglowek oddaje 8 bajtow do poprzedniego blioku i ma tylko 8
+                     └────────────────────────────────────────┘
+       ADRES:         ZAWARTOŚĆ W RAM:
+ 0x60100000A0  ┌─────────────────────────────────┐
+               │ Końcówka danych POPRZEDNIEGO    │  ◄── (Ukradzione pole prev_size)
+ 0x60100000A8  ├─────────────────────────────────┤
+               │ Rozmiar TWOJEGO bloku + flagi   │  ◄── Tutaj patrzy ptr[-1] (Zawsze 8B przed ptr)
+ 0x60100000B0  ├─────────────────────────────────┤
+               │ TWOJE DANE (początek)           │  ◄── TUTAJ WSKAZUJE "ptr"
+
+
+w innym przypadku ma 16 B
+       ADRES:         ZAWARTOŚĆ W RAM:
+ 0x60100000A0  ┌─────────────────────────────────┐
+               │ ROZMIAR POPRZEDNIEGO (pustego)  │  ◄── Pole prev_size (Teraz aktywne!)
+ 0x60100000A8  ├─────────────────────────────────┤
+               │ Rozmiar TWOJEGO bloku + flagi   │  ◄── Tutaj patrzy ptr[-1] (Zawsze 8B przed ptr)
+ 0x60100000B0  ├─────────────────────────────────┤
+               │ TWOJE DANE (początek)           │  ◄── TUTAJ WSKAZUJE "ptr"
+
+
+
+https://www.open-std.org/JTC1/sc22/wg14/www/docs/n3177.pdf
+
+
+git config user.name "$(whoami)"
+git config user.email "$(whoami)@$(hostname)"
